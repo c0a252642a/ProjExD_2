@@ -97,6 +97,9 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     return bb_imgs, bb_accs
 
 def gameover(screen: pg.Surface) -> None:
+    """
+    こうかとんが爆弾に当たると、5秒間Game Overが表示されたのち終了する
+    """
     bbg_img = pg.Surface(screen.get_size())
     bbg_img.fill((0, 0, 0))
     bbg_img.set_alpha(180)
