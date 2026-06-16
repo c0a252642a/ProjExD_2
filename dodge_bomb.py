@@ -14,6 +14,23 @@ DELTA = {
 }
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
+    """方向ごとのこうかとん画像を生成して辞書を返す"""
+    base_img = pg.image.load("fig/3.png")
+    right_img = pg.transform.flip(base_img, True, False)
+
+    kk_dict = {
+        (0, 0): None,
+        (-5,  0): pg.transform.rotozoom(base_img, 0, 0.9),
+        (-5, -5): pg.transform.rotozoom(base_img, -45, 0.9),
+        ( 0, -5): pg.transform.rotozoom(right_img, 90, 0.9),
+        (+5, -5): pg.transform.rotozoom(right_img, 45, 0.9),
+        (+5,  0): pg.transform.rotozoom(right_img, 0, 0.9),
+        (+5, +5): pg.transform.rotozoom(right_img, -45, 0.9),
+        ( 0, +5): pg.transform.rotozoom(right_img, -90, 0.9),
+        (-5, +5): pg.transform.rotozoom(base_img, 45, 0.9),
+    }
+    return kk_dict
 
 def check_bound(rct:pg.Rect) -> tuple[bool, bool]:
     """
@@ -76,9 +93,13 @@ def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/pg_bg.jpg")
-    kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
+
+    kk_imgs = get_kk_imgs()
+    kk_img = kk_imgs[(-5,  0)]
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
+
+    flash_kk_img = kk_imgs[(-5,  0)]
 
     # 拡大、加速のリストを取得
     bb_imgs, bb_accs = init_bb_imgs()
@@ -94,6 +115,7 @@ def main():
     clock = pg.time.Clock()
     tmr = 0
     while True:
+        # ゲーム終了判定
         for event in pg.event.get():
             if event.type == pg.QUIT: 
                 return
@@ -102,6 +124,7 @@ def main():
             # print("ゲームオーバー")
             gameover(screen)
             return
+        
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
 
@@ -109,6 +132,10 @@ def main():
             if key_lst[key]:
                 sum_mv[0] += mv[0] # 横方向の移動量
                 sum_mv[1] += mv[1] # 縦方向の移動量
+
+        kk_img = kk_imgs[tuple(sum_mv)] if kk_imgs[tuple(sum_mv)] is not None else flash_kk_img
+        flash_kk_img = kk_img
+
         kk_rct.move_ip(sum_mv)
         if check_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
