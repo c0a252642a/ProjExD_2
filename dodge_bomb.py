@@ -3,6 +3,7 @@ import sys
 import pygame as pg
 import random
 import time
+import math
 
 
 WIDTH, HEIGHT = 1100, 650
@@ -31,6 +32,37 @@ def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
         (-5, +5): pg.transform.rotozoom(base_img, 45, 0.9),
     }
     return kk_dict
+
+def calc_orientation(org: pg.Rect, dst: pg.Rect, current_xy: tuple[float, float]) -> tuple[float, float]:
+    """
+    始点(org)から終点(dst)へ向かう、ノルムが√50の方向ベクトルを計算する。
+    ただし、距離が300未満の場合は元の方向(current_xy)を維持する。
+    
+    引数:
+        org: 始点（爆弾）のRect
+        dst: 終点（こうかとん）のRect
+        current_xy: 現在の方向ベクトル (vx, vy)
+    戻り値:
+        次に移動すべき方向ベクトル (vx, vy)
+    """
+    # 1. 爆弾(org)とこうかとん(dst)の「中心座標」の差ベクトルを求める
+    x_diff = dst.centerx - org.centerx
+    y_diff = dst.centery - org.centery
+    
+    # 2. 2点間の距離（差ベクトルのノルム）を計算する（三平方の定理： √(x^2 + y^2) ）
+    distance = math.hypot(x_diff, y_diff) # math.sqrt(x_diff**2 + y_diff**2) と同じ
+    
+    # 3. 距離が300未満、または距離が0（重なっている）の場合は、慣性として現在の方向をそのまま返す
+    if distance < 300 or distance == 0:
+        return current_xy
+        
+    # 4. 差ベクトルのノルムが √50 (約7.07) になるように正規化する
+    # 一度長さを 1 にして（distanceで割る）、そこに √50 を掛けます
+    target_norm = math.sqrt(50)
+    vx = (x_diff / distance) * target_norm
+    vy = (y_diff / distance) * target_norm
+    
+    return vx, vy
 
 def check_bound(rct:pg.Rect) -> tuple[bool, bool]:
     """
