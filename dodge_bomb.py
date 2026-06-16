@@ -153,7 +153,6 @@ def main():
                 return
         screen.blit(bg_img, [0, 0]) 
         if kk_rct.colliderect(bb_rct): # こうかとんRectと爆弾Rectが重なったら
-            # print("ゲームオーバー")
             gameover(screen)
             return
         
