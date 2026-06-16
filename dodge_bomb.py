@@ -2,14 +2,15 @@ import os
 import sys
 import pygame as pg
 import random
+import time
 
 
 WIDTH, HEIGHT = 1100, 650
 DELTA = {
-    pg.K_UP: (0, -10), 
-    pg.K_DOWN: (0, +10),
-    pg.K_LEFT: (-10, 0),
-    pg.K_RIGHT: (+10, 0),
+    pg.K_UP: (0, -5), 
+    pg.K_DOWN: (0, +5),
+    pg.K_LEFT: (-5, 0),
+    pg.K_RIGHT: (+5, 0),
 }
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -46,6 +47,31 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     bb_accs = [a for a in range(1, 11)]
     return bb_imgs, bb_accs
 
+def gameover(screen: pg.Surface) -> None:
+    bbg_img = pg.Surface(screen.get_size())
+    bbg_img.fill((0, 0, 0))
+    bbg_img.set_alpha(180)
+    screen.blit(bbg_img, [0,0])
+
+    font = pg.font.Font(None, 80)
+    text_surf = font.render("Game Over", True, (255, 255, 255))
+    text_rct = text_surf.get_rect()
+    text_rct.center = (screen.get_width() // 2, screen.get_height() // 2 - 40)
+    screen.blit(text_surf, text_rct)
+
+    cry_kk_img1 = pg.image.load("fig/8.png")
+    cry_kk_rct1 = cry_kk_img1.get_rect()
+    cry_kk_rct1.center = (screen.get_width() // 2-200, screen.get_height() // 2-50)
+    screen.blit(cry_kk_img1, cry_kk_rct1)
+
+    cry_kk_img2 = pg.image.load("fig/8.png")
+    cry_kk_rct2 = cry_kk_img2.get_rect()
+    cry_kk_rct2.center = (screen.get_width() // 2+200, screen.get_height() // 2-50)
+    screen.blit(cry_kk_img2, cry_kk_rct2)
+
+    pg.display.update()
+    time.sleep(5)
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -71,11 +97,11 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT: 
                 return
-        if kk_rct.colliderect(bb_rct): # こうかとんRectと爆弾Rectが重なったら
-            print("ゲームオーバー")
-            return
         screen.blit(bg_img, [0, 0]) 
-
+        if kk_rct.colliderect(bb_rct): # こうかとんRectと爆弾Rectが重なったら
+            # print("ゲームオーバー")
+            gameover(screen)
+            return
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
 
